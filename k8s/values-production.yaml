@@ -1,0 +1,67 @@
+grafana:
+  # ← reset any existing config (must be a map, not a string)
+  config: {}
+
+  # 1) persistence for dashboards, users, etc.
+  persistence:
+    enabled: true
+    storageClassName: fast-ssd
+    accessModes:
+    - ReadWriteOnce
+    size: 10Gi
+
+  # 2) dashboard providers
+  dashboardProviders:
+    dashboardproviders.yaml: |-
+      apiVersion: 1
+      providers:
+        - name: default
+          orgId: 1
+          folder: ""
+          type: file
+          disableDeletion: false
+          updateIntervalSeconds: 10
+          options:
+            path: /var/lib/grafana/dashboards/default
+
+  # 3) Prometheus datasource
+  datasources:
+    datasources.yaml: |-
+      apiVersion: 1
+      datasources:
+        - name: Prometheus
+          type: prometheus
+          url: http://my-kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090
+          access: proxy
+          isDefault: true
+
+  # 4) inline dashboard JSON
+  dashboards:
+    default:
+      springboot-overview.json: |-
+        {
+          "id": null,
+          "uid": "springboot-overview",
+          "title": "Spring Boot Overview",
+          "panels": [
+            {
+              "type": "graph",
+              "title": "HTTP Requests",
+              "targets": [
+                {
+                  "expr": "http_server_requests_seconds_count{app=\"springboot-app\"}",
+                  "legendFormat": "{{method}} {{uri}}"
+                }
+              ]
+            }
+          ]
+        }
+
+  # 5) disable the sidecars so there are no missing-ConfigMap mounts
+  sidecar:
+    dashboardProviders:
+      enabled: false
+    datasources:
+      enabled: false
+    dashboards:
+      enabled: false

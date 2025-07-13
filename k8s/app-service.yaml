@@ -1,4 +1,4 @@
-# k8s/app-service.yaml
+# k8s/app-service.yaml (update)
 apiVersion: v1
 kind: Service
 metadata:
@@ -8,6 +8,7 @@ spec:
   selector:
     app: springboot-app
   ports:
-  - port: 80
+  - name: http
+    port: 80
     targetPort: 8080
   type: ClusterIP
